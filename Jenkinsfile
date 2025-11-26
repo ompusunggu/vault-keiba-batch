@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'debian:bullseye-slim'
-            args '-u root:root'
+            image 'hashicorp/vault:latest'
+            args '-u root:root --entrypoint='
         }
     }
 
@@ -22,29 +22,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo '=== Installing dependencies ==='
+                echo '=== Installing minimal dependencies ==='
                 sh '''
-                    apt-get update
-                    apt-get install -y jq wget gnupg lsb-release curl ca-certificates apt-transport-https
-
-                    # Install yq
-                    wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-                    chmod +x /usr/local/bin/yq
-                '''
-            }
-        }
-
-        stage('Install Vault CLI') {
-            steps {
-                echo '=== Installing Vault CLI ==='
-                sh '''
-                    # Use curl instead of wget for better SSL handling
-                    curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-                    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
-
-                    apt-get update
-                    apt-get install -y vault
+                    # Vault image uses Alpine, so use apk
+                    apk add --no-cache jq bash git
                 '''
             }
         }
