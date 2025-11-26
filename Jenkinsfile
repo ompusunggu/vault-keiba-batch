@@ -1,15 +1,12 @@
 pipeline {
     agent {
         docker {
-            image 'ubuntu:latest'
+            image 'debian:bullseye-slim'
             args '-u root:root'
         }
     }
 
-    environment {
-        VAULT_ADDR = credentials('vault-addr')
-        VAULT_TOKEN = credentials('vault-token')
-    }
+    // Removed environment block - will use withCredentials instead
 
     triggers {
         pollSCM('H/5 * * * *')  // Poll SCM every 5 minutes
@@ -55,29 +52,35 @@ pipeline {
         stage('Verify Vault Connection') {
             steps {
                 echo '=== Verifying Vault connectivity ==='
-                sh '''
-                    export VAULT_ADDR=${VAULT_ADDR}
-                    export VAULT_TOKEN=${VAULT_TOKEN}
-                    vault status
-                '''
+                withCredentials([
+                    string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
+                    string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')
+                ]) {
+                    sh '''
+                        echo "Connecting to Vault at: $VAULT_ADDR"
+                        vault status
+                    '''
+                }
             }
         }
 
         stage('Sync Secrets to Vault') {
             steps {
                 echo '=== Syncing secrets to Vault ==='
-                sh '''
-                    export VAULT_ADDR=${VAULT_ADDR}
-                    export VAULT_TOKEN=${VAULT_TOKEN}
+                withCredentials([
+                    string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
+                    string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')
+                ]) {
+                    sh '''
+                        # Make script executable
+                        chmod +x setup-secrets.sh
 
-                    # Make script executable
-                    chmod +x setup-secrets.sh
+                        # Run setup script
+                        ./setup-secrets.sh
 
-                    # Run setup script
-                    ./setup-secrets.sh
-
-                    echo "✓ Secrets synced successfully!"
-                '''
+                        echo "✓ Secrets synced successfully!"
+                    '''
+                }
             }
         }
     }
