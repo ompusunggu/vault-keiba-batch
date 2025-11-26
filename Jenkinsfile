@@ -28,7 +28,7 @@ pipeline {
                 echo '=== Installing dependencies ==='
                 sh '''
                     apt-get update
-                    apt-get install -y jq wget gnupg lsb-release curl
+                    apt-get install -y jq wget gnupg lsb-release curl ca-certificates apt-transport-https
 
                     # Install yq
                     wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -41,8 +41,11 @@ pipeline {
             steps {
                 echo '=== Installing Vault CLI ==='
                 sh '''
-                    wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+                    # Use curl instead of wget for better SSL handling
+                    curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
                     echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+
                     apt-get update
                     apt-get install -y vault
                 '''
