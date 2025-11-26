@@ -68,7 +68,7 @@ pipeline {
                 echo '=== Syncing secrets to Vault ==='
                 sh '''
                     # TEMPORARY: Hardcoded values for testing
-                    export VAULT_ADDR="http://localhost:8200"
+                    export VAULT_ADDR="http://host.docker.internal:8200"
                     export VAULT_TOKEN="hvs.Cjl0zssqsbcUW6aL2mC09V1O"
 
                     # Make script executable
