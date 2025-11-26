@@ -52,35 +52,33 @@ pipeline {
         stage('Verify Vault Connection') {
             steps {
                 echo '=== Verifying Vault connectivity ==='
-                withCredentials([
-                    string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
-                    string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')
-                ]) {
-                    sh '''
-                        echo "Connecting to Vault at: $VAULT_ADDR"
-                        vault status
-                    '''
-                }
+                sh '''
+                    # TEMPORARY: Hardcoded values for testing
+                    export VAULT_ADDR="http://host.docker.internal:8200"
+                    export VAULT_TOKEN="hvs.Cjl0zssqsbcUW6aL2mC09V1O"
+
+                    echo "Connecting to Vault at: $VAULT_ADDR"
+                    vault status
+                '''
             }
         }
 
         stage('Sync Secrets to Vault') {
             steps {
                 echo '=== Syncing secrets to Vault ==='
-                withCredentials([
-                    string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
-                    string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')
-                ]) {
-                    sh '''
-                        # Make script executable
-                        chmod +x setup-secrets.sh
+                sh '''
+                    # TEMPORARY: Hardcoded values for testing
+                    export VAULT_ADDR="http://localhost:8200"
+                    export VAULT_TOKEN="your-vault-token-here"
 
-                        # Run setup script
-                        ./setup-secrets.sh
+                    # Make script executable
+                    chmod +x setup-secrets.sh
 
-                        echo "✓ Secrets synced successfully!"
-                    '''
-                }
+                    # Run setup script
+                    ./setup-secrets.sh
+
+                    echo "✓ Secrets synced successfully!"
+                '''
             }
         }
     }
