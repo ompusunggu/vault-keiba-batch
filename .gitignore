@@ -34,3 +34,16 @@ build/
 
 ### Claude Code ###
 .claude
+
+### Vault ###
+vault/data/
+vault/logs/
+vault/file/
+vault-keys.txt
+*.unseal
+*.token
+
+### Secrets (local overrides with real values) ###
+secrets.local.json
+secrets.local.yaml
+secrets.local.yml
