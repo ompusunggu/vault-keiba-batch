@@ -32,34 +32,39 @@ pipeline {
 
         stage('Verify Vault Connection') {
             steps {
-                echo '=== Verifying Vault connectivity ==='
-                sh '''
-                    # TEMPORARY: Hardcoded values for testing
-                    export VAULT_ADDR="http://host.docker.internal:8200"
-                    export VAULT_TOKEN="hvs.Cjl0zssqsbcUW6aL2mC09V1O"
+                script {
+                    withCredentials([string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
+                                                     string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')]) {
 
-                    echo "Connecting to Vault at: $VAULT_ADDR"
-                    vault status
-                '''
+                        echo '=== Verifying Vault connectivity ==='
+                        sh '''
+                            echo "Connecting to Vault at: $VAULT_ADDR"
+                            vault status
+                        '''
+                    }
+                }
             }
         }
 
         stage('Sync Secrets to Vault') {
             steps {
-                echo '=== Syncing secrets to Vault ==='
-                sh '''
-                    # TEMPORARY: Hardcoded values for testing
-                    export VAULT_ADDR="http://host.docker.internal:8200"
-                    export VAULT_TOKEN="hvs.Cjl0zssqsbcUW6aL2mC09V1O"
 
-                    # Make script executable
-                    chmod +x setup-secrets.sh
+                withCredentials([string(credentialsId: 'vault-addr', variable: 'VAULT_ADDR'),
+                                 string(credentialsId: 'vault-token', variable: 'VAULT_TOKEN')]) {
 
-                    # Run setup script
-                    ./setup-secrets.sh
+                                        echo '=== Syncing secrets to Vault ==='
+                                                        sh '''
 
-                    echo "✓ Secrets synced successfully!"
-                '''
+                                                            # Make script executable
+                                                            chmod +x setup-secrets.sh
+
+                                                            # Run setup script
+                                                            ./setup-secrets.sh
+
+                                                            echo "✓ Secrets synced successfully!"
+                                                        '''
+                                    }
+
             }
         }
     }
