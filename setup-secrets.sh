@@ -27,17 +27,17 @@ VAULT_PATH="secret/keiba-batch/secrets.json"
 echo "Vault Address: $VAULT_ADDR"
 echo "Vault Path: $VAULT_PATH"
 
-# Read the entire secrets.json content
+# Read the entire secrets.json content and store it directly
 echo "Reading secrets.json..."
-SECRETS_CONTENT=$(cat secrets.json)
+echo "Syncing entire secrets.json to Vault..."
 
-# Store the entire JSON structure in Vault
-echo "Syncing entire secrets.json to Vault as a single JSON object..."
-vault kv put ${VAULT_PATH} data="$SECRETS_CONTENT"
+# Use jq to properly format and store the JSON structure
+# This extracts the keiba-batch object and stores it as the value
+vault kv put ${VAULT_PATH} - < secrets.json
 
 echo "✓ Secrets synced successfully to Vault at: ${VAULT_PATH}"
 echo ""
 echo "To retrieve the secrets, use:"
-echo "  vault kv get -format=json ${VAULT_PATH} | jq -r '.data.data.data' | jq"
+echo "  vault kv get -format=json ${VAULT_PATH}"
 echo ""
 echo "=== All secrets synced successfully to Vault ==="
